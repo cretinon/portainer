@@ -1,0 +1,44 @@
+services:
+    flaresolverr:
+        entrypoint:
+            - /usr/local/bin/flaresolverr.sh
+        environment:
+            - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+        working_dir: /opt/flaresolverr
+        image: localhost:5000/jinade_flaresolverr_debian:latest
+        ports:
+            - "8191:8191/tcp"
+
+        container_name: flaresolverr
+        hostname: flaresolverr
+        restart: always
+
+        volumes:
+            - flaresolverr:/flaresolverr
+
+        cap_add:
+            - NET_ADMIN
+
+        networks:
+            internet_access:
+               ipv4_address: 172.42.0.92
+            vpn_access:
+               ipv4_address: 172.94.0.92
+        dns:
+            - 192.168.2.53
+        dns_search: intranet.local
+        domainname: intranet.local
+
+networks:
+    internet_access:
+        external: true
+        name: internet_access
+    vpn_access:
+        external: true
+        name: vpn_access
+
+volumes:
+    flaresolverr:
+        external: true
+        name: flaresolverr

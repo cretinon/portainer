@@ -1,0 +1,42 @@
+services:
+  app:
+    image: 'docker.io/jc21/nginx-proxy-manager:latest'
+
+    volumes:
+      - nginx_data:/data
+      - nginx_letsencrypt:/etc/letsencrypt
+
+    container_name: nginx
+    hostname: nginx
+    restart: always
+    networks:
+      no_internet_access:
+         ipv4_address: 172.22.0.80
+    dns:
+       - 172.22.0.1
+    dns_search: intranet.local
+    domainname: intranet.local
+    expose:
+      - 80/tcp
+      - 81/tcp
+      - 443/tcp
+    ports:
+      - 80:80/tcp
+      - 81:81/tcp
+      - 443:443/tcp
+    extra_hosts:
+        - host.docker.internal:host-gateway
+
+
+networks:
+    no_internet_access:
+        external: true
+        name: no_internet_access
+
+volumes:
+    nginx_data:
+        external: true
+        name: nginx_data
+    nginx_letsencrypt:
+        external: true
+        name: nginx_letsencrypt

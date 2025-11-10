@@ -1,0 +1,44 @@
+services:
+    nzbhydra2:
+        entrypoint:
+            - /usr/local/bin/nzbhydra2.sh
+        environment:
+            - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+        working_dir: /opt/Nzbhydra2
+        image: localhost:5000/jinade_nzbhydra2_debian:latest
+        ports:
+            - "5076:5076/tcp"
+
+        container_name: nzbhydra2
+        hostname: nzbhydra2
+        restart: always
+
+        volumes:
+            - nzbhydra2:/nzbhydra2
+
+        cap_add:
+            - NET_ADMIN
+
+        networks:
+            internet_access:
+               ipv4_address: 172.42.0.76
+            vpn_access:
+               ipv4_address: 172.94.0.76
+        dns:
+            - 192.168.2.53
+        dns_search: intranet.local
+        domainname: intranet.local
+
+networks:
+    internet_access:
+        external: true
+        name: internet_access
+    vpn_access:
+        external: true
+        name: vpn_access
+
+volumes:
+    nzbhydra2:
+        external: true
+        name: nzbhydra2

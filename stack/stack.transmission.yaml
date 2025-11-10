@@ -1,0 +1,43 @@
+services:
+    transmission:
+        entrypoint:
+            - /usr/local/transmission.sh
+        environment:
+            - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+        volumes:
+            - transmission:/transmission
+        working_dir: /
+        image: localhost:5000/jinade_transmission_debian:latest
+        ports:
+            - "9091:9091/tcp"
+
+        container_name: transmission
+        hostname: transmission
+        restart: always
+        cap_add:
+            - NET_ADMIN
+        privileged: true
+        networks:
+            internet_access:
+               ipv4_address: 172.42.0.91
+            vpn_access:
+               ipv4_address: 172.94.0.91
+
+        dns:
+            - 192.168.2.53
+        dns_search: intranet.local
+        domainname: intranet.local
+
+networks:
+    vpn_access:
+        external: true
+        name: vpn_access
+    internet_access:
+        external: true
+        name: internet_access
+
+volumes:
+    transmission:
+        external: true
+        name: transmission

@@ -1,0 +1,29 @@
+services:
+    registry:
+        entrypoint:
+            - /opt/squid/squid.sh
+        environment:
+            - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+        working_dir: /
+        image: localhost:5000/jinade_squid_debian:latest
+
+        container_name: squid
+        hostname: squid
+        restart: always
+        networks:
+            internet_access:
+               ipv4_address: 172.42.0.28
+        dns:
+            - 192.168.2.53
+        dns_search: intranet.local
+        domainname: intranet.local
+        expose:
+            - 3128/tcp
+        ports:
+            - 3128:3128/tcp
+
+networks:
+    internet_access:
+        external: true
+        name: internet_access

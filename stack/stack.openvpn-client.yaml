@@ -1,0 +1,43 @@
+services:
+    openvpn_client:
+        entrypoint:
+            - /usr/bin/openvpn.sh
+        environment:
+            - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+        volumes:
+            - vpn:/vpn
+        working_dir: /
+        image: localhost:5000/jinade_openvpn-client_debian:latest
+
+        cap_add:
+            - NET_ADMIN
+        devices:
+            - /dev/net/tun
+
+        container_name: openvpn-client
+        hostname: openvpn-client
+        restart: always
+        networks:
+            internet_access:
+               ipv4_address: 172.42.0.94
+            vpn_access:
+               ipv4_address: 172.94.0.94
+
+        dns:
+            - 192.168.2.53
+        dns_search: intranet.local
+        domainname: intranet.local
+
+networks:
+    vpn_access:
+        external: true
+        name: vpn_access
+    internet_access:
+        external: true
+        name: internet_access
+
+volumes:
+    vpn:
+        external: true
+        name: vpn

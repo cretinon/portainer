@@ -1,0 +1,44 @@
+services:
+    tor-privoxy:
+        entrypoint:
+            - /usr/bin/torproxy.sh
+        environment:
+            - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+        volumes:
+            - tor-privoxy:/tor-privoxy
+        working_dir: /
+        image: localhost:5000/jinade_tor-privoxy_debian:latest
+        ports:
+            - "8118:8118/tcp"
+            - "9050:9050/tcp"
+            - "9051:9051/tcp"
+
+        container_name: tor-privoxy
+        hostname: tor-privoxy
+        restart: always
+        cap_add:
+            - NET_ADMIN
+        networks:
+            internet_access:
+               ipv4_address: 172.42.0.18
+            vpn_access:
+               ipv4_address: 172.94.0.18
+
+        dns:
+            - 192.168.2.53
+        dns_search: intranet.local
+        domainname: intranet.local
+
+networks:
+    vpn_access:
+        external: true
+        name: vpn_access
+    internet_access:
+        external: true
+        name: internet_access
+
+volumes:
+    tor-privoxy:
+        external: true
+        name: tor-privoxy

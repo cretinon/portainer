@@ -1,0 +1,37 @@
+services:
+    registry:
+        entrypoint:
+            - /entrypoint.sh
+        environment:
+            - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+        volumes:
+            - registry:/var/lib/registry
+        working_dir: /
+        image: registry:latest
+        command: /etc/docker/registry/config.yml
+
+        container_name: registry
+        hostname: registry
+        restart: always
+        networks:
+            no_internet_access:
+               ipv4_address: 172.22.0.55
+        dns:
+            - 172.22.0.1
+        dns_search: intranet.local
+        domainname: intranet.local
+        expose:
+            - 5000/tcp
+        ports:
+            - 5000:5000/tcp
+
+networks:
+    no_internet_access:
+        external: true
+        name: no_internet_access
+
+volumes:
+    registry:
+        external: true
+        name: registry

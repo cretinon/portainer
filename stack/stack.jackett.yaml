@@ -1,0 +1,44 @@
+services:
+    jackett:
+        entrypoint:
+            - /usr/local/bin/jackett.sh
+        environment:
+            - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+        working_dir: /opt/Jackett
+        image: localhost:5000/jinade_jackett_debian:latest
+        ports:
+            - "9117:9117/tcp"
+
+        container_name: jackett
+        hostname: jackett
+        restart: always
+        cap_add:
+            - NET_ADMIN
+        privileged: true
+        volumes:
+            - jackett:/jackett
+ 
+        networks:
+            internet_access:
+               ipv4_address: 172.42.0.17
+            vpn_access:
+               ipv4_address: 172.94.0.17
+
+        dns:
+            - 192.168.2.53
+        dns_search: intranet.local
+        domainname: intranet.local
+
+networks:
+    internet_access:
+        external: true
+        name: internet_access
+    vpn_access:
+        external: true
+        name: vpn_access
+
+volumes:
+    jackett:
+        external: true
+        name: jackett

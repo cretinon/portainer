@@ -1,0 +1,37 @@
+services:
+    sonarr:
+        entrypoint:
+            - /usr/local/bin/sonarr.sh
+        environment:
+            - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+        working_dir: /opt/Sonarr
+        image: localhost:5000/jinade_sonarr_debian:latest
+        ports:
+            - "8989:8989/tcp"
+
+        container_name: sonarr
+        hostname: sonarr
+        restart: always
+        privileged: true
+        volumes:
+            - sonarr:/sonarr
+ 
+        networks:
+            internet_access:
+               ipv4_address: 172.42.0.89
+
+        dns:
+            - 192.168.2.53
+        dns_search: intranet.local
+        domainname: intranet.local
+
+networks:
+    internet_access:
+        external: true
+        name: internet_access
+
+volumes:
+    sonarr:
+        external: true
+        name: sonarr

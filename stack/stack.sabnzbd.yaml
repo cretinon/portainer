@@ -1,0 +1,43 @@
+services:
+    sabnzbd:
+        entrypoint:
+            - /usr/local/sabnzbd.sh
+        environment:
+            - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+        volumes:
+            - sabnzbd:/sabnzbd
+        working_dir: /
+        image: localhost:5000/jinade_sabnzbd_debian:latest
+        ports:
+            - "8080:8080/tcp"
+
+        container_name: sabnzbd
+        hostname: sabnzbd
+        restart: always
+        cap_add:
+            - NET_ADMIN
+        privileged: true
+        networks:
+            internet_access:
+               ipv4_address: 172.42.0.80
+            vpn_access:
+               ipv4_address: 172.94.0.80
+
+        dns:
+            - 192.168.2.53
+        dns_search: intranet.local
+        domainname: intranet.local
+
+networks:
+    vpn_access:
+        external: true
+        name: vpn_access
+    internet_access:
+        external: true
+        name: internet_access
+
+volumes:
+    sabnzbd:
+        external: true
+        name: sabnzbd
