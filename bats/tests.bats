@@ -27,12 +27,12 @@ setup() {
   assert_output --partial "portainerci running"
 }
 
-test "stop container" {
+@test "stop container" {
   run docker container stop portainerci
   assert_success
 }
 
-test "rm container" {
+@test "rm container" {
   run docker container rm portainerci
   assert_success
 }
