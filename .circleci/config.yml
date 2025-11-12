@@ -104,7 +104,7 @@ jobs:
       - install-bats
       - install-shellcheck
       - install-kcov
-      - install_codecov
+      - install-codecov
       - checkout-prereq
       - checkout:
           path: git/docker
