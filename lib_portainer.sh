@@ -294,7 +294,7 @@ _install_portainer () {
 
     _volume_create "portainer_data"
 
-    docker run -d -p 9000:9000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce
+    docker run -d -p 9000:9000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:alpine
 
     _warning "Manual post-config, please do :"
     _warning " * open a browser to $PORTAINER_URL"
@@ -307,14 +307,14 @@ _install_portainer () {
         case $__answer in
             [Yy] )
                 read -r -p "Paste your portainer Token " PORTAINER_TOKEN
-                echo "PORTAINER_TOKEN=\"$PORTAINER_TOKEN\"" >  "$MY_GIT_DIR/portainer/conf"/portainer.conf
+                echo "PORTAINER_TOKEN=\"$PORTAINER_TOKEN\"" >  "$MY_GIT_DIR/portainer/conf"/my_portainer.conf
                 break
                 ;;
             * ) echo "Please get your Token";;
         esac
     done
 
-    echo "PORTAINER_URL=\"https://$INTIP:9443\"" >> "$MY_GIT_DIR/portainer/conf"/portainer.conf
+    echo "PORTAINER_URL=\"https://$PORTAINER_URL:9000\"" >> "$MY_GIT_DIR/portainer/conf"/my_portainer.conf
 
     _func_end "0" ; return 0
 }

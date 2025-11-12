@@ -1,8 +1,5 @@
 version: 2.1
 
-orbs:
-  codecov: codecov/codecov@5
-
 commands:
   circleci-image-update:
     description: 'update apt repo'
@@ -31,6 +28,16 @@ commands:
       - run:
           name: Install kcov
           command: cd /tmp ; wget http://archive.ubuntu.com/ubuntu/pool/universe/k/kcov/kcov_43+dfsg-2_amd64.deb ; sudo dpkg -i kcov_43+dfsg-2_amd64.deb
+
+  install-codecov:
+    description: 'install pip && pipx from apt then codecov from pipx'
+    steps:
+      - run:
+          name: Install pip
+          command: sudo apt install -y pip pipx
+      - run:
+          name: Install codecov
+          command: pipx install codecov-cli
 
   checkout-prereq:
     description: 'mkdir'
@@ -72,7 +79,7 @@ commands:
     steps:
       - run:
           name: Run shellcheck
-          command: shellcheck git/portainer/lib_portainer.sh
+          command: cd "${HOME}/project/git/portainer" && MY_GIT_DIR="${HOME}/project/git" ${HOME}/project/git/shell/my_warp.sh --lib portainer -s
 
   run-bats:
     description: 'run bats'
@@ -86,7 +93,7 @@ commands:
     steps:
       - run:
           name: Run kcov
-          command: cd "${HOME}/project/git/portainer" && MY_GIT_DIR="${HOME}/project/git" kcov --exclude-path=.git/,README.md,/usr/,.codecov.yml --include-path="${HOME}/project/git/portainer"  /tmp/dest_kcov ${HOME}/project/git/shell/my_warp.sh --lib portainer -b
+          command: cd "${HOME}/project/git/portainer" && MY_GIT_DIR="${HOME}/project/git" ${HOME}/project/git/shell/my_warp.sh -d -v --lib portainer -k
 
 jobs:
   build-and-test:
@@ -97,6 +104,7 @@ jobs:
       - install-bats
       - install-shellcheck
       - install-kcov
+      - install_codecov
       - checkout-prereq
       - checkout:
           path: git/docker
@@ -104,18 +112,11 @@ jobs:
       - checkout-libdocker
       - prepare-our-environment
       - circleci-image-result
-      - run-shellcheck
       - setup_remote_docker:
           docker_layer_caching: true
+      - run-shellcheck
       - run-bats
       - run-kcov
-      - store_artifacts:
-          path: /tmp/dest_kcov
-      - codecov/upload:
-          files: /tmp/dest_kcov/my_warp.sh/cobertura.xml
-          slug: cretinon/docker
-          git_service: github
-
 
 workflows:
   test-libdocker:
