@@ -26,3 +26,18 @@ setup() {
   run $MY_GIT_DIR/shell/my_warp.sh -d -v --lib docker container_list
   assert_output --partial "portainerci running"
 }
+
+test "stop container" {
+  run docker container stop portainerci
+  assert_success
+}
+
+test "rm container" {
+  run docker container rm portainerci
+  assert_success
+}
+
+@test "_volume_remove" {
+  run $MY_GIT_DIR/shell/my_warp.sh --lib docker volume_remove --volume_name portainer_ci
+  assert_success
+}
