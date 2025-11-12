@@ -107,7 +107,7 @@ jobs:
       - install-codecov
       - checkout-prereq
       - checkout:
-          path: git/docker
+          path: git/portainer
       - checkout-libshell
       - checkout-libdocker
       - prepare-our-environment
