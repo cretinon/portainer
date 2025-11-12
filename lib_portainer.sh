@@ -319,13 +319,32 @@ _install_portainer () {
     _func_end "0" ; return 0
 }
 
+#
+# usage: _install_ci
+#
+_install_portainer_ci () {
+    _func_start
+
+    local __vol_path
+    local __return
+
+    _volume_create "portainer_ci"
+    __vol_path=$(_volume_get_mount_point "portainer_ci")
+    (cd "$__vol_path" || return 1 ; tar -zcv -f "$MY_GIT_DIR/portainer/volume/portainer.tgz" .)
+
+    docker run -d -p 9000:9000 --name=portainerci --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_ci:/data portainer/portainer-ce:alpine
+    __return=$?
+
+    _func_end "$__return" ; return $__return
+}
+
 ####################################################################################################
 ############################################# PROCESS ##############################################
 ####################################################################################################
 _process_lib_portainer () {
     _func_start
 
-    if ! _load_conf "$MY_GIT_DIR/portainer/conf/my_portainer.conf"; then _error "something went wrong when loading portainer conf" ; _usage ; _func_end "1" ; return 1 ; fi
+    if ! _load_conf "$MY_GIT_DIR/portainer/conf/portainer.conf"; then _error "something went wrong when loading portainer conf" ; _usage ; _func_end "1" ; return 1 ; fi
 
     eval set -- "$@"
 
@@ -353,6 +372,7 @@ _process_lib_portainer () {
             stack_start )	     _stack_start "$STACK_NAME" ; __return=$? ; break ;;
             stack_stop )	     _stack_stop "$STACK_NAME" ; __return=$? ; break ;;
             install )		     _install_portainer ; __return=$? ; break ;;
+            install_ci )	     _install_portainer_ci ; __return=$? ; break ;;
             -- ) shift ;;
             *)  _error "command $1 not found" ; __return=1 ; break ;;
         esac

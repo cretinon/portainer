@@ -16,3 +16,13 @@ setup() {
     load '/usr/lib/bats/bats-support/load'
     load '/usr/lib/bats/bats-assert/load'
 }
+
+@test "_install_ci" {
+  run $MY_GIT_DIR/shell/my_warp.sh -d -v --lib portainer install_ci
+  assert_success
+}
+
+@test "_container_list" {
+  run $MY_GIT_DIR/shell/my_warp.sh -d -v --lib docker container_list
+  assert_output --partial "portainerci running"
+}
