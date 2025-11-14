@@ -26,7 +26,7 @@ _get_endpoint_id () {
     __response=$(_curl "GET" "$__url" "$__header")
     __return=$?
 
-    if [ $__return != 0 ] ; then _error "something went wrong in curl" ; _func_end "$__return" ; return $__return ; fi
+    if [ $__return != 0 ] ; then _error "something went wrong in curl" ; _func_end "$__return" ; return $__return ; fi # no _shellcheck
 
     __id=$(echo "$__response" | jq '.[] | .Id')
 
