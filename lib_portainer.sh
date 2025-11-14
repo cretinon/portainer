@@ -19,16 +19,22 @@ _get_endpoint_id () {
     _func_start
 
     local __id
+    local __return
     local __url="$PORTAINER_URL/api/endpoints"
     local __header="X-API-Key: $PORTAINER_TOKEN"
 
-    __id=$(_curl "GET" "$__url" "$__header" | jq '.[] | .Id')
+    __response=$(_curl "GET" "$__url" "$__header")
+    __return=$?
 
-    _debug "result:$__id"
+    if [ $__return != 0 ] ; then _error "something went wrong in curl" ; _func_end "$__return" ; return $__return ; fi
+
+    __id=$(echo "$__response" | jq '.[] | .Id')
+
+    _debug "id:$__id"
 
     echo "$__id"
 
-    _func_end "0" ; return 0
+    _func_end "$__return" ; return $__return
 }
 
 #
@@ -325,14 +331,36 @@ _install_portainer () {
 _install_portainer_ci () {
     _func_start
 
-    local __vol_path
+    local __vol_name="portainer_ci"
+    local __cont_tmp_name="tmpcont"
+    local __cont_name="portainerci"
     local __return
 
-    _volume_create "portainer_ci"
-    __vol_path=$(_volume_get_mount_point "portainer_ci")
-    (cd "$__vol_path" || return 1 ; tar -zcv -f "$MY_GIT_DIR/portainer/volume/portainer.tgz" .)
+    if ! _volume_create "$__vol_name" 2> /dev/null ; then
+        _error "something went wrong with volume create"; _func_end "1" ; return 1
+    fi
 
-    docker run -d -p 9000:9000 --name=portainerci --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_ci:/data portainer/portainer-ce:alpine
+    if ! docker run -d --name "$__cont_tmp_name" -v "$__vol_name:/data" cretinon/jinade_base:alpine sleep 1000 2> /dev/null ; then
+        _error "something went wrong with docker run tmp_cont sleep 1000"; _func_end "1" ; return 1
+    fi
+
+    if ! docker cp "$MY_GIT_DIR/portainer/volume/portainer.tgz" "$__cont_tmp_name:/data/" 2> /dev/null ; then
+        _error "something went wrong with docker cp"; _func_end "1" ; return 1
+    fi
+
+    if ! docker exec -u root -it "$__cont_tmp_name" /bin/sh -c "cd data;ls -ail; tar -zxv -f portainer.tgz" 2> /dev/null ; then
+        _error "something went wrong when untar"; _func_end "1" ; return 1
+    fi
+
+    if ! docker stop "$__cont_tmp_name" 2> /dev/null ; then
+        _error "something went wrong with docker stop tmp_cont"; _func_end "1" ; return 1
+    fi
+
+    if ! docker rm "$__cont_tmp_name" 2> /dev/null ; then
+        _error "something went wrong with docker rm tmp_cont"; _func_end "1" ; return 1
+    fi
+
+    docker run -d -p 9000:9000 --name "$__cont_name" --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v "$__vol_name:/data" portainer/portainer-ce:alpine
     __return=$?
 
     _func_end "$__return" ; return $__return

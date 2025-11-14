@@ -27,17 +27,7 @@ setup() {
   assert_output --partial "portainerci running"
 }
 
-@test "stop container" {
-  run docker container stop portainerci
-  assert_success
-}
-
-@test "rm container" {
-  run docker container rm portainerci
-  assert_success
-}
-
-@test "_volume_remove" {
-  run $MY_GIT_DIR/shell/my_warp.sh --lib docker volume_remove --volume_name portainer_ci
-  assert_success
+@test "_get_endpoint_id" {
+  run $MY_GIT_DIR/shell/my_warp.sh --lib portainer get_endpoint_id
+  assert_output "3"
 }

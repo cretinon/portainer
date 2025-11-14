@@ -119,6 +119,6 @@ jobs:
       - run-kcov
 
 workflows:
-  test-libdocker:
+  test-libportainer:
      jobs:
        - build-and-test
