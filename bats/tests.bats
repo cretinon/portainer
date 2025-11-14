@@ -28,6 +28,6 @@ setup() {
 }
 
 @test "_get_endpoint_id" {
-  run $MY_GIT_DIR/shell/my_warp.sh --lib portainer get_endpoint_id
+  run $MY_GIT_DIR/shell/my_warp.sh -d -v --lib portainer get_endpoint_id
   assert_output "3"
 }

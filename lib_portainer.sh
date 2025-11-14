@@ -363,6 +363,8 @@ _install_portainer_ci () {
     docker run -d -p 9000:9000 --name "$__cont_name" --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v "$__vol_name:/data" portainer/portainer-ce:alpine
     __return=$?
 
+    sleep 300
+
     _func_end "$__return" ; return $__return
 }
 
