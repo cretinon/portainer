@@ -334,6 +334,8 @@ _install_portainer_ci () {
     local __vol_name="portainer_ci"
     local __cont_tmp_name="tmpcont"
     local __cont_name="portainerci"
+    local __cont_circleci_name
+    local __cont_ip
     local __return
 
     if ! _volume_create "$__vol_name" 2> /dev/null ; then
@@ -362,6 +364,16 @@ _install_portainer_ci () {
 
     docker run -d -p 9000:9000 --name "$__cont_name" --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v "$__vol_name:/data" portainer/portainer-ce:alpine
     __return=$?
+
+    __cont_ip=$(_container_get_ip "$__cont_name" "bridge")
+
+    sed -i "$MY_GIT_DIR/portainer/conf/portainer.conf" -e 's/127.0.0.1/'"$__cont_ip"'/'
+
+    if ! _load_conf "$MY_GIT_DIR/portainer/conf/portainer.conf"; then _error "something went wrong when loading portainer conf" ; _usage ; _func_end "1" ; return 1 ; fi
+
+    __cont_circleci_name=$(_container_get_name_from_image "cimg/base:current")
+
+    _container_connect_to_network "$__cont_circleci_name" "bridge"
 
     _func_end "$__return" ; return $__return
 }
