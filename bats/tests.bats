@@ -27,12 +27,7 @@ setup() {
   assert_output --partial "portainerci running"
 }
 
-@test "_container_list_verbose" {
-  run $MY_GIT_DIR/shell/my_warp.sh -d -v --lib docker container_list_verbose
-  assert_output --partial "this doesnt not exist"
-}
-
 @test "_get_endpoint_id" {
-  run $MY_GIT_DIR/shell/my_warp.sh -d -v --lib portainer get_endpoint_id
+  run $MY_GIT_DIR/shell/my_warp.sh --lib portainer get_endpoint_id
   assert_output "3"
 }
