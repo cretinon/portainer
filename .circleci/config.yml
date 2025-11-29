@@ -113,7 +113,7 @@ jobs:
       - prepare-our-environment
       - circleci-image-result
       - setup_remote_docker:
-          docker_layer_caching: true
+          docker_layer_caching: false
       - run-shellcheck
       - run-bats
       - run-kcov

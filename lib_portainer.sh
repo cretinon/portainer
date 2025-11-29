@@ -44,16 +44,23 @@ _get_stack () {
     _func_start
 
     local __stack
+    local __return
+    local __result
     local __url="$PORTAINER_URL/api/stacks"
     local __header="X-API-Key: $PORTAINER_TOKEN"
 
-    __stack=$(_curl "GET" "$__url" "$__header" | jq -r '.[] | .Name')
+    __result=$(_curl "GET" "$__url" "$__header")
+    __return=$?
+
+    if [ "$__return" -ne 0 ]; then _func_end "$__return" ; return $__return ; fi
+
+    __stack=$(echo "$__result" | jq -r '.[] | .Name')
 
     _debug "result:$__stack"
 
     echo "$__stack"
 
-    _func_end "0" ; return 0
+    _func_end "0" ; return 0 # no _shellcheck
 }
 
 #
@@ -63,21 +70,27 @@ _get_stack_id_from_name () {
     _func_start
 
     if _notexist "$1"; then _error "stack_name EMPTY"; _func_end "1" ; return 1; fi
-    if ! _get_stack | $GREP "$1" > /dev/null; then _warning "stack_name:$1 unknown"; fi
+#    if ! _get_stack | $GREP "$1" > /dev/null; then _warning "stack_name:$1 unknown"; fi
 
     _debug "stack_name:$1"
 
     local __id
+    local __result
     local __url="$PORTAINER_URL/api/stacks"
     local __header="X-API-Key: $PORTAINER_TOKEN"
 
-    __id=$(_curl "GET" "$__url" "$__header" | jq '.[] | select(.Name == "$1")' | jq '.Id')
+    __result=$(_curl "GET" "$__url" "$__header")
+    __return=$?
+
+    if [ "$__return" -ne 0 ]; then _error "something went wrong with _curl" ; _func_end "$__return" ; return "$__return" ; fi
+
+    __id=$(echo "$__result" | jq '.[] | select(.Name == "$1")' | jq '.Id')
 
     _debug "result:""$__id"
 
     echo "$__id"
 
-    _func_end "0" ; return 0
+    _func_end "0" ; return 0 # no _shellcheck
 }
 
 #
@@ -100,7 +113,7 @@ _get_stack_name_from_id () {
 
     echo "$__name"
 
-    _func_end "0" ; return 0
+    _func_end "0" ; return 0 # no _shellcheck
 }
 
 #
@@ -124,15 +137,18 @@ _stack_create () {
     local __header
     local __data
     local __data_type
+    local __return
 
     __id=$(_get_stack_id_from_name "$1")
+    __return=$?
+    if [ "$__return" -ne 0 ] ; then _error "something went wrong with _get_stack_id_from_name" ; _func_end "1" ; return 1 ; fi
 
     if _exist "$__id"; then
         _warning "stack_name already exist"
     else
         __id=$(_get_endpoint_id)
         __stack_name="$1"
-        __one_line_yaml=$(< "$2" yq -R)
+        __one_line_yaml=$(< "$2" yq -o json -I=0 | jq -R )
 
         __url="$PORTAINER_URL/api/stacks/create/standalone/string?endpointId=$__id"
         __header="X-API-Key: $PORTAINER_TOKEN"
@@ -148,9 +164,7 @@ _stack_create () {
         _debug "response:""$__response"
     fi
 
-    echo "$__response" | jq -M
-
-    _func_end "0" ; return 0
+    _func_end "0" ; return 0 # no _shellcheck
 }
 
 #
@@ -194,7 +208,7 @@ _stack_update () {
 
     echo "$__response" | jq -M
 
-    _func_end "0" ; return 0
+    _func_end "0" ; return 0 # no _shellcheck
 }
 
 #
@@ -225,7 +239,7 @@ _stack_delete () {
 
     echo "$__response" | jq -M
 
-    _func_end "0" ; return 0
+    _func_end "0" ; return 0 # no _shellcheck
 }
 
 #
@@ -256,7 +270,7 @@ _stack_start () {
 
     echo "$__response" | jq -M
 
-    _func_end "0" ; return 0
+    _func_end "0" ; return 0 # no _shellcheck
 }
 
 #
@@ -287,7 +301,7 @@ _stack_stop () {
 
     echo "$__response" | jq -M
 
-    _func_end "0" ; return 0
+    _func_end "0" ; return 0 # no _shellcheck
 }
 
 #
@@ -322,7 +336,7 @@ _install_portainer () {
 
     echo "PORTAINER_URL=\"https://$PORTAINER_URL:9000\"" >> "$MY_GIT_DIR/portainer/conf"/my_portainer.conf
 
-    _func_end "0" ; return 0
+    _func_end "0" ; return 0 # no _shellcheck
 }
 
 #
