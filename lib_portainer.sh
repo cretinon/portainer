@@ -50,6 +50,7 @@ _get_stack () {
     local __header="X-API-Key: $PORTAINER_TOKEN"
 
     __result=$(_curl "GET" "$__url" "$__header")
+
     __return=$?
 
     if [ "$__return" -ne 0 ]; then _func_end "$__return" ; return $__return ; fi
@@ -70,7 +71,7 @@ _get_stack_id_from_name () {
     _func_start
 
     if _notexist "$1"; then _error "stack_name EMPTY"; _func_end "1" ; return 1; fi
-#    if ! _get_stack | $GREP "$1" > /dev/null; then _warning "stack_name:$1 unknown"; fi
+    #if ! _get_stack | $GREP "$1" > /dev/null; then _warning "stack_name:$1 unknown"; fi
 
     _debug "stack_name:$1"
 
@@ -84,7 +85,7 @@ _get_stack_id_from_name () {
 
     if [ "$__return" -ne 0 ]; then _error "something went wrong with _curl" ; _func_end "$__return" ; return "$__return" ; fi
 
-    __id=$(echo "$__result" | jq '.[] | select(.Name == "$1")' | jq '.Id')
+    __id=$(echo "$__result" | jq '.[] | select(.Name == "'"$1"'")' | jq '.Id' )
 
     _debug "result:""$__id"
 
@@ -120,7 +121,7 @@ _get_stack_name_from_id () {
 # usage: _stack_create --stack_name name ($1) --yaml_file file ($2)
 #
 _stack_create () {
-    _func_start
+    _func_start "Starting creation of stack $1"
 
     if _notexist "$1"; then _error "stack_name EMPTY"; _func_end "1" ; return 1; fi
     if _notexist "$2"; then _error "yaml_file EMPTY"; _func_end "1" ; return 1; fi
@@ -143,28 +144,26 @@ _stack_create () {
     __return=$?
     if [ "$__return" -ne 0 ] ; then _error "something went wrong with _get_stack_id_from_name" ; _func_end "1" ; return 1 ; fi
 
-    if _exist "$__id"; then
-        _warning "stack_name already exist"
-    else
-        __id=$(_get_endpoint_id)
-        __stack_name="$1"
-        __one_line_yaml=$(< "$2" yq -o json -I=0 | jq -R )
+    if _exist "$__id"; then _error "stack_name $1 already exist, skipping creation" ; _func_end "1" ; return 1 ; fi
 
-        __url="$PORTAINER_URL/api/stacks/create/standalone/string?endpointId=$__id"
-        __header="X-API-Key: $PORTAINER_TOKEN"
-        __data_type="Content-Type: text/plain"
-        __data='{
+    __id=$(_get_endpoint_id)
+    __stack_name="$1"
+    __one_line_yaml=$(< "$2" yq -o json -I=0 | jq -R )
+
+    __url="$PORTAINER_URL/api/stacks/create/standalone/string?endpointId=$__id"
+    __header="X-API-Key: $PORTAINER_TOKEN"
+    __data_type="Content-Type: text/plain"
+    __data='{
   "fromAppTemplate": false,
   "name": "'$__stack_name'",
   "stackFileContent": '"$__one_line_yaml"'
 }'
+    __response=$(_curl "POST" "$__url" "$__header" "$__data_type" "$__data")
+    __return=$?
 
-        __response=$(_curl "POST" "$__url" "$__header" "$__data_type" "$__data")
+    _debug "response:""$__response"
 
-        _debug "response:""$__response"
-    fi
-
-    _func_end "0" ; return 0 # no _shellcheck
+    _func_end "$__return" ; return $__return
 }
 
 #
